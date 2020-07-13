@@ -38,13 +38,13 @@ module.exports = function(buffer) {
   if (ifd0) {
     if (isPositiveInteger(ifd0.ExifOffset))
       result.exif = readTags(buffer, ifd0.ExifOffset + 6, bigEndian, tags.exif);
-    
+
     if (isPositiveInteger(ifd0.GPSInfo))
       result.gps = readTags(buffer, ifd0.GPSInfo + 6, bigEndian, tags.gps);
-    
+
     if (isPositiveInteger(ifd0.InteropOffset))
       result.interop = readTags(buffer, ifd0.InteropOffset + 6, bigEndian, tags.exif);
-  } 
+  }
   return result;
 };
 
@@ -106,10 +106,14 @@ function readTag(buffer, offset, bigEndian) {
       return null;
     }
   }
-  
+
   // Special case for ascii strings
   if (type === 2) {
-    var string = buffer.toString('ascii', valueOffset, valueOffset + numValues);
+    var asciiSlice = buffer.slice(valueOffset, valueOffset + numValues);
+    if (asciiSlice.some(x => x >> 7 > 0))
+      return { buffer: asciiSlice, bigEndian: bigEndian };
+
+    var string = asciiSlice.toString('ascii');
     if (string[string.length - 1] === '\0') // remove null terminator
       string = string.slice(0, -1);
 

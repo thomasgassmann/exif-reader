@@ -6,6 +6,7 @@ var expect = require('unexpected')
 var chanceGenerators = require('chance-generators');
 var tetons = fs.readFileSync(__dirname + '/data/tetons.exif');
 var IMG_0774 = fs.readFileSync(__dirname + '/data/IMG_0774.exif');
+var non_ascii = fs.readFileSync(__dirname + '/data/non-ascii.exif');
 
 describe('exif-reader', function() {
   it('should read tiff and exif data', function() {
@@ -123,6 +124,18 @@ describe('exif-reader', function() {
            GPSDestBearingRef: 'T',
            GPSDestBearing: 167.44014084507043,
            GPSDateStamp: '2015:03:01' } });
+  });
+
+  it('should read non-ascii data', function () {
+    expect(exif(non_ascii), 'to equal', {
+      image: {
+        ImageDescription: { buffer: Buffer.from([0xE4, 0xB8, 0x80, 0xE4, 0xB8, 0x89, 0xE4, 0xB8, 0x80, 0xE5, 0x9B, 0x9B, 0x00]), bigEndian: true },
+        XResolution: 1,
+        YResolution: 1,
+        ResolutionUnit: 1,
+        YCbCrPositioning: 1
+      }
+    });
   });
 
   it('should error when missing Exif tag', function() {
